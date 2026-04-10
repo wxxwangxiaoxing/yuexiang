@@ -1,0 +1,2 @@
+com.yuexiang.framework.mybatis.config.MybatisPlusAutoConfiguration
+com.yuexiang.framework.mybatis.core.handler.DefaultDBFieldHandler

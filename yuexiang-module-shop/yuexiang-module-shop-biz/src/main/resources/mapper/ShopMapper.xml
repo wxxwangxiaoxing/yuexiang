@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuexiang.shop.mapper.ShopMapper">
+
+    <resultMap id="ShopResultMap" type="com.yuexiang.shop.domain.entity.Shop">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type_id" property="typeId"/>
+        <result column="images" property="images"/>
+        <result column="area" property="area"/>
+        <result column="address" property="address"/>
+        <result column="longitude" property="longitude"/>
+        <result column="latitude" property="latitude"/>
+        <result column="avg_price" property="avgPrice"/>
+        <result column="sales_count" property="salesCount"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="score" property="score"/>
+        <result column="review_count" property="reviewCount"/>
+        <result column="open_hours" property="openHours"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+        <result column="distance" property="distance"/>
+    </resultMap>
+
+    <select id="selectShopListWithDistance" resultMap="ShopResultMap">
+        SELECT s.*,
+               ST_Distance_Sphere(
+                   POINT(s.longitude, s.latitude),
+                   POINT(#{longitude}, #{latitude})
+               ) AS distance
+        FROM tb_shop s
+        WHERE s.deleted = 0
+        <if test="typeId != null">
+            AND s.type_id = #{typeId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND s.name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="area != null and area != ''">
+            AND s.area = #{area}
+        </if>
+        <if test="minPrice != null">
+            AND s.avg_price &gt;= #{minPrice} * 100
+        </if>
+        <if test="maxPrice != null">
+            AND s.avg_price &lt;= #{maxPrice} * 100
+        </if>
+        <choose>
+            <when test="sortBy == 'distance'">
+                ORDER BY distance ASC
+            </when>
+            <when test="sortBy == 'score'">
+                ORDER BY s.score DESC
+            </when>
+            <when test="sortBy == 'price_asc'">
+                ORDER BY s.avg_price ASC
+            </when>
+            <when test="sortBy == 'price_desc'">
+                ORDER BY s.avg_price DESC
+            </when>
+            <otherwise>
+                ORDER BY s.score DESC
+            </otherwise>
+        </choose>
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="selectShopListBasic" resultMap="ShopResultMap">
+        SELECT s.*
+        FROM tb_shop s
+        WHERE s.deleted = 0
+        <if test="typeId != null">
+            AND s.type_id = #{typeId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND s.name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="area != null and area != ''">
+            AND s.area = #{area}
+        </if>
+        <if test="minPrice != null">
+            AND s.avg_price &gt;= #{minPrice} * 100
+        </if>
+        <if test="maxPrice != null">
+            AND s.avg_price &lt;= #{maxPrice} * 100
+        </if>
+        <choose>
+            <when test="sortBy == 'score'">
+                ORDER BY s.score DESC
+            </when>
+            <when test="sortBy == 'price_asc'">
+                ORDER BY s.avg_price ASC
+            </when>
+            <when test="sortBy == 'price_desc'">
+                ORDER BY s.avg_price DESC
+            </when>
+            <otherwise>
+                ORDER BY s.score DESC
+            </otherwise>
+        </choose>
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="countShopList" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM tb_shop s
+        WHERE s.deleted = 0
+        <if test="typeId != null">
+            AND s.type_id = #{typeId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND s.name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="area != null and area != ''">
+            AND s.area = #{area}
+        </if>
+        <if test="minPrice != null">
+            AND s.avg_price &gt;= #{minPrice} * 100
+        </if>
+        <if test="maxPrice != null">
+            AND s.avg_price &lt;= #{maxPrice} * 100
+        </if>
+    </select>
+
+    <select id="selectShopTags" resultType="java.lang.String">
+        SELECT t.name
+        FROM tb_tag_relation tr
+        INNER JOIN tb_tag t ON t.id = tr.tag_id AND t.deleted = 0
+        WHERE tr.biz_type = 1
+          AND tr.biz_id = #{shopId}
+        ORDER BY t.sort ASC
+        LIMIT 3
+    </select>
+
+    <select id="selectFavoriteShopIds" resultType="java.lang.Long">
+        SELECT biz_id
+        FROM tb_favorite
+        WHERE user_id = #{userId}
+          AND biz_type = 1
+          AND deleted = 0
+          AND biz_id IN
+          <foreach collection="shopIds" item="shopId" open="(" separator="," close=")">
+              #{shopId}
+          </foreach>
+    </select>
+
+    <select id="selectAiSummary" resultType="java.lang.String">
+        SELECT summary
+        FROM tb_shop_ai_analysis
+        WHERE shop_id = #{shopId}
+    </select>
+
+    <select id="selectAreaStats" resultType="java.util.HashMap">
+        SELECT s.area, COUNT(*) as shop_count
+        FROM tb_shop s
+        WHERE s.deleted = 0
+        <if test="typeId != null">
+            AND s.type_id = #{typeId}
+        </if>
+          AND s.area IS NOT NULL
+          AND s.area != ''
+        GROUP BY s.area
+        ORDER BY shop_count DESC
+    </select>
+
+</mapper>

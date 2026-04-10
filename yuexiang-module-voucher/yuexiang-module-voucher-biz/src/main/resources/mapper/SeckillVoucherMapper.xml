@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuexiang.voucher.mapper.SeckillVoucherMapper">
+
+    <resultMap id="SeckillVoucherWithInfoMap" type="com.yuexiang.voucher.domain.dto.SeckillVoucherWithInfo">
+        <id property="voucherId" column="voucher_id"/>
+        <result property="sessionId" column="session_id"/>
+        <result property="stock" column="stock"/>
+        <result property="totalStock" column="total_stock"/>
+        <result property="beginTime" column="begin_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="shopId" column="shop_id"/>
+        <result property="title" column="title"/>
+        <result property="subTitle" column="sub_title"/>
+        <result property="payValue" column="pay_value"/>
+        <result property="actualValue" column="actual_value"/>
+    </resultMap>
+
+    <select id="selectSeckillList" resultType="com.yuexiang.voucher.domain.vo.SeckillVoucherVO">
+        SELECT 
+            v.id AS voucherId,
+            v.shop_id AS shopId,
+            s.name AS shopName,
+            v.title,
+            v.pay_value / 100.0 AS payValue,
+            v.actual_value / 100.0 AS actualValue,
+            sv.stock,
+            sv.total_stock AS totalStock,
+            sv.begin_time AS beginTime,
+            sv.end_time AS endTime,
+            JSON_UNQUOTE(JSON_EXTRACT(s.images, '$[0]')) AS image
+        FROM tb_voucher v
+        JOIN tb_seckill_voucher sv ON sv.voucher_id = v.id
+        JOIN tb_shop s ON s.id = v.shop_id
+        WHERE v.type = 1
+          AND v.status = 0
+          AND v.deleted = 0
+          AND sv.end_time > NOW()
+          AND sv.deleted = 0
+        ORDER BY
+            CASE
+                WHEN sv.begin_time &lt;= NOW() AND sv.end_time > NOW() THEN 0
+                ELSE 1
+            END,
+            sv.begin_time ASC
+        LIMIT #{pageSize}
+    </select>
+
+    <update id="decrStock">
+        UPDATE tb_seckill_voucher 
+        SET stock = stock - 1 
+        WHERE voucher_id = #{voucherId} 
+          AND stock > 0 
+          AND deleted = 0
+    </update>
+
+    <update id="incrStock">
+        UPDATE tb_seckill_voucher
+        SET stock = stock + 1
+        WHERE voucher_id = #{voucherId}
+          AND deleted = 0
+    </update>
+
+    <select id="countVouchersBySessionIds" resultType="java.util.Map">
+        SELECT session_id, COUNT(*) as count 
+        FROM tb_seckill_voucher 
+        WHERE session_id IN
+        <foreach collection="sessionIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0 
+        GROUP BY session_id
+    </select>
+
+    <select id="selectVouchersBySessionWithPage" resultMap="SeckillVoucherWithInfoMap">
+        SELECT sv.voucher_id, sv.session_id, sv.stock, sv.total_stock, sv.begin_time, sv.end_time, 
+               v.shop_id, v.title, v.sub_title, v.pay_value, v.actual_value 
+        FROM tb_seckill_voucher sv 
+        JOIN tb_voucher v ON sv.voucher_id = v.id 
+        WHERE sv.session_id = #{sessionId} 
+          AND sv.deleted = 0 
+          AND v.deleted = 0 
+        ORDER BY sv.begin_time ASC 
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="countBySessionId" resultType="java.lang.Long">
+        SELECT COUNT(*) 
+        FROM tb_seckill_voucher 
+        WHERE session_id = #{sessionId} 
+          AND deleted = 0
+    </select>
+
+</mapper>

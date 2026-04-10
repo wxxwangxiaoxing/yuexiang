@@ -1,0 +1,9 @@
+package com.yuexiang.user.mapper;
+
+import com.yuexiang.user.domain.entity.UserMessage;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface UserMessageMapper extends BaseMapper<UserMessage> {
+}

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuexiang.user.mapper.UserCenterMapper">
+
+    <select id="selectMyVouchers" resultType="com.yuexiang.user.domain.vo.MyVoucherVO">
+        SELECT 
+            vo.id AS orderId,
+            vo.order_no AS orderNo,
+            v.id AS voucherId,
+            s.id AS shopId,
+            s.name AS shopName,
+            JSON_UNQUOTE(JSON_EXTRACT(s.images, '$[0]')) AS shopImage,
+            v.title,
+            v.sub_title AS subTitle,
+            v.pay_value AS payValue,
+            v.actual_value AS actualValue,
+            vo.status,
+            v.valid_begin_time AS validBeginTime,
+            v.valid_end_time AS validEndTime,
+            vo.create_time AS createTime
+        FROM tb_voucher_order vo
+        INNER JOIN tb_voucher v ON v.id = vo.voucher_id
+        INNER JOIN tb_shop s ON s.id = v.shop_id
+        WHERE vo.user_id = #{userId}
+          AND vo.deleted = 0
+          AND v.deleted = 0
+          <if test="status != null and status == 1">
+              AND vo.status = 1
+          </if>
+          <if test="status != null and status == 2">
+              AND vo.status = 2
+          </if>
+          <if test="status != null and status == 3">
+              AND vo.status = 1 AND v.valid_end_time &lt; NOW()
+          </if>
+          <if test="status == null">
+              AND vo.status IN (1, 2)
+          </if>
+        ORDER BY vo.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countMyVouchers" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM tb_voucher_order vo
+        INNER JOIN tb_voucher v ON v.id = vo.voucher_id
+        WHERE vo.user_id = #{userId}
+          AND vo.deleted = 0
+          AND v.deleted = 0
+          <if test="status != null and status == 1">
+              AND vo.status = 1
+          </if>
+          <if test="status != null and status == 2">
+              AND vo.status = 2
+          </if>
+          <if test="status != null and status == 3">
+              AND vo.status = 1 AND v.valid_end_time &lt; NOW()
+          </if>
+          <if test="status == null">
+              AND vo.status IN (1, 2)
+          </if>
+    </select>
+
+    <select id="selectMyOrders" resultType="com.yuexiang.user.domain.vo.MyOrderVO">
+        SELECT 
+            vo.id AS orderId,
+            vo.order_no AS orderNo,
+            s.id AS shopId,
+            s.name AS shopName,
+            JSON_UNQUOTE(JSON_EXTRACT(s.images, '$[0]')) AS shopImage,
+            v.title AS voucherTitle,
+            v.pay_value AS payValue,
+            v.actual_value AS actualValue,
+            vo.pay_type AS payType,
+            vo.status,
+            vo.create_time AS createTime,
+            vo.pay_time AS payTime,
+            vo.use_time AS useTime
+        FROM tb_voucher_order vo
+        INNER JOIN tb_voucher v ON v.id = vo.voucher_id
+        INNER JOIN tb_shop s ON s.id = v.shop_id
+        WHERE vo.user_id = #{userId}
+          AND vo.deleted = 0
+          <if test="status != null and status >= 0">
+              AND vo.status = #{status}
+          </if>
+        ORDER BY vo.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countMyOrders" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM tb_voucher_order vo
+        WHERE vo.user_id = #{userId}
+          AND vo.deleted = 0
+          <if test="status != null and status >= 0">
+              AND vo.status = #{status}
+          </if>
+    </select>
+
+    <select id="selectMyBlogs" resultType="com.yuexiang.user.domain.vo.MyBlogVO">
+        SELECT 
+            b.id AS blogId,
+            b.title,
+            JSON_UNQUOTE(JSON_EXTRACT(b.images, '$[0]')) AS coverImage,
+            b.shop_id AS shopId,
+            s.name AS shopName,
+            b.like_count AS likeCount,
+            b.comment_count AS commentCount,
+            b.status,
+            b.create_time AS createTime
+        FROM tb_blog b
+        LEFT JOIN tb_shop s ON s.id = b.shop_id
+        WHERE b.user_id = #{userId}
+          AND b.deleted = 0
+          <if test="status != null and status >= 0">
+              AND b.status = #{status}
+          </if>
+        ORDER BY b.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countMyBlogs" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM tb_blog b
+        WHERE b.user_id = #{userId}
+          AND b.deleted = 0
+          <if test="status != null and status >= 0">
+              AND b.status = #{status}
+          </if>
+    </select>
+
+    <select id="selectMyFavorites" resultType="com.yuexiang.user.domain.vo.MyFavoriteVO">
+        SELECT 
+            f.id AS favoriteId,
+            f.biz_type AS bizType,
+            f.biz_id AS bizId,
+            CASE f.biz_type
+                WHEN 1 THEN s.name
+                WHEN 2 THEN b.title
+            END AS title,
+            CASE f.biz_type
+                WHEN 1 THEN JSON_UNQUOTE(JSON_EXTRACT(s.images, '$[0]'))
+                WHEN 2 THEN JSON_UNQUOTE(JSON_EXTRACT(b.images, '$[0]'))
+            END AS image,
+            CASE f.biz_type
+                WHEN 1 THEN CONCAT(s.type_name, ' | 人均￥', s.avg_price)
+                WHEN 2 THEN CONCAT('by ', u.nick_name, ' · ', b.like_count, '赞')
+            END AS subTitle,
+            s.score,
+            u.id AS authorId,
+            u.nick_name AS authorName,
+            u.avatar AS authorAvatar,
+            f.create_time AS createTime
+        FROM tb_favorite f
+        LEFT JOIN tb_shop s ON s.id = f.biz_id AND f.biz_type = 1
+        LEFT JOIN tb_blog b ON b.id = f.biz_id AND f.biz_type = 2
+        LEFT JOIN tb_user u ON u.id = b.user_id AND f.biz_type = 2
+        WHERE f.user_id = #{userId}
+          AND f.deleted = 0
+          <if test="type != null">
+              AND f.biz_type = #{type}
+          </if>
+        ORDER BY f.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countMyFavorites" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM tb_favorite f
+        WHERE f.user_id = #{userId}
+          AND f.deleted = 0
+          <if test="type != null">
+              AND f.biz_type = #{type}
+          </if>
+    </select>
+
+    <select id="selectBrowseHistory" resultType="com.yuexiang.user.domain.vo.BrowseHistoryItemVO">
+        SELECT 
+            h.id AS historyId,
+            h.biz_type AS bizType,
+            h.biz_id AS bizId,
+            CASE h.biz_type
+                WHEN 1 THEN s.name
+                WHEN 2 THEN b.title
+            END AS title,
+            CASE h.biz_type
+                WHEN 1 THEN JSON_UNQUOTE(JSON_EXTRACT(s.images, '$[0]'))
+                WHEN 2 THEN JSON_UNQUOTE(JSON_EXTRACT(b.images, '$[0]'))
+            END AS image,
+            CASE h.biz_type
+                WHEN 1 THEN CONCAT(s.type_name, ' | 人均￥', s.avg_price)
+                WHEN 2 THEN CONCAT(b.like_count, '赞 · ', b.comment_count, '评论')
+            END AS subTitle,
+            h.view_time AS viewTime,
+            h.view_count AS viewCount
+        FROM tb_browse_history h
+        LEFT JOIN tb_shop s ON s.id = h.biz_id AND h.biz_type = 1
+        LEFT JOIN tb_blog b ON b.id = h.biz_id AND h.biz_type = 2
+        WHERE h.user_id = #{userId}
+          AND h.deleted = 0
+          <if test="type != null">
+              AND h.biz_type = #{type}
+          </if>
+        ORDER BY h.view_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countBrowseHistory" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM tb_browse_history h
+        WHERE h.user_id = #{userId}
+          AND h.deleted = 0
+          <if test="type != null">
+              AND h.biz_type = #{type}
+          </if>
+    </select>
+
+    <update id="clearBrowseHistory">
+        UPDATE tb_browse_history
+        SET deleted = 1, update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+          <if test="type != null">
+              AND biz_type = #{type}
+          </if>
+    </update>
+
+    <select id="selectAiRecords" resultType="com.yuexiang.user.domain.vo.AiRecordVO">
+        SELECT 
+            s.id AS recordId,
+            s.session_id AS sessionId,
+            s.title,
+            (SELECT LEFT(content, 100) FROM tb_ai_message m 
+             WHERE m.session_id = s.session_id AND m.role = 'assistant' 
+             ORDER BY m.create_time ASC LIMIT 1) AS preview,
+            (JSON_LENGTH(s.shop_ids) - JSON_LENGTH(REPLACE(s.shop_ids, ',', '')) + 1) AS shopCount,
+            s.create_time AS createTime
+        FROM tb_ai_session s
+        WHERE s.user_id = #{userId}
+          AND s.deleted = 0
+        ORDER BY s.create_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countAiRecords" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM tb_ai_session s
+        WHERE s.user_id = #{userId}
+          AND s.deleted = 0
+    </select>
+
+</mapper>

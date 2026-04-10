@@ -1,0 +1,114 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: yuexiang-server
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/yuexiang?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:123456}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+
+    elasticsearch:
+      uris: ${ES_URIS:http://localhost:9200}
+      username: ${ES_USERNAME:}
+      password: ${ES_PASSWORD:}
+      connection-timeout: 5s
+      socket-timeout: 10s
+
+rocketmq:
+  enabled: false
+  name-server: 10.0.20.8:9876
+  producer:
+    enabled: false
+    group: yuexiang-producer-group
+    send-timeout: 3000
+    retry-times: 2
+  consumer:
+    enabled: false
+    group: yuexiang-consumer-group
+    consume-thread-min: 5
+    consume-thread-max: 20
+    max-reconsume-times: 16
+
+yuexiang:
+  ai:
+    enabled: true
+    primary: DEEPSEEK
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:sk-e76953d52bf645cf887b7c84c9be3e2a}
+      base-url: https://api.deepseek.com
+      model: deepseek-chat
+      temperature: 0.7
+      max-tokens: 2000
+    openai:
+      api-key: ${OPENAI_API_KEY:your-openai-api-key}
+      base-url: https://api.openai.com
+      model: gpt-4o-mini
+      temperature: 0.7
+      max-tokens: 2000
+    qwen:
+      api-key: ${QWEN_API_KEY:your-qwen-api-key}
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      model: qwen-plus
+      temperature: 0.7
+      max-tokens: 2000
+    fallback:
+      enabled: true
+      max-retries: 2
+      retry-delay-ms: 1000
+  
+  business:
+    points:
+      default-level: 1
+      max-points: 1000000
+      min-points: 0
+      bonus-points: 30
+      bonus-trigger-days: 7
+    sign:
+      repair-cost-points: 50
+      repair-max-per-month: 3
+      repair-window-days: 7
+    wallet:
+      max-retry: 3
+      max-amount: 100000000
+    account:
+      max-err-l1: 3
+      max-err-l2: 5
+      max-err-l3: 10
+      lock-minutes-l1: 120
+      lock-minutes-l2: 1440
+      cooling-days: 7
+      bcrypt-strength: 10
+    blog:
+      max-month-lookback: 13
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+logging:
+  level:
+    root: info
+    com.yuexiang: debug

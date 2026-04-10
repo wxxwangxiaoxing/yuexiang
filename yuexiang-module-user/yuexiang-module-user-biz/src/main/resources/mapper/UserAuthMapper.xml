@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuexiang.user.mapper.UserAuthMapper">
+
+    <resultMap id="BaseResultMap" type="com.yuexiang.user.domain.entity.UserAuth">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="real_name" property="realName"/>
+        <result column="id_card" property="idCard"/>
+        <result column="front_image" property="frontImage"/>
+        <result column="back_image" property="backImage"/>
+        <result column="status" property="status"/>
+        <result column="reject_reason" property="rejectReason"/>
+        <result column="audit_time" property="auditTime"/>
+        <result column="deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, real_name, id_card, front_image, back_image, status, reject_reason, 
+        audit_time, deleted, create_time, update_time
+    </sql>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM tb_user_auth
+        WHERE user_id = #{userId} AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <update id="updateStatus">
+        UPDATE tb_user_auth
+        SET status = #{status},
+            reject_reason = #{rejectReason},
+            audit_time = NOW(),
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="existsByIdCard" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM tb_user_auth
+        WHERE id_card = #{idCard}
+          AND deleted = 0
+          AND (#{excludeUserId} IS NULL OR user_id != #{excludeUserId})
+    </select>
+
+</mapper>

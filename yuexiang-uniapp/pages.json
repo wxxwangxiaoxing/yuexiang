@@ -1,0 +1,143 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/index",
+      "style": {
+        "navigationBarTitleText": "悦享生活",
+        "navigationBarBackgroundColor": "#FF5A5F",
+        "navigationBarTextStyle": "white",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/blog/index",
+      "style": {
+        "navigationBarTitleText": "探店",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/ai/chat",
+      "style": {
+        "navigationBarTitleText": "AI 探店助手"
+      }
+    },
+    {
+      "path": "pages/message/index",
+      "style": {
+        "navigationBarTitleText": "消息"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationBarBackgroundColor": "#FF5A5F",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/shop/detail",
+      "style": {
+        "navigationBarTitleText": "商户详情",
+        "navigationBarBackgroundColor": "#FFFFFF",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/shop/select",
+      "style": {
+        "navigationBarTitleText": "选择商户",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/voucher/seckill",
+      "style": {
+        "navigationBarTitleText": "限时秒杀",
+        "navigationBarBackgroundColor": "#333333",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/blog/detail",
+      "style": {
+        "navigationBarTitleText": "笔记详情"
+      }
+    },
+    {
+      "path": "pages/blog/publish",
+      "style": {
+        "navigationBarTitleText": "发布笔记"
+      }
+    },
+    {
+      "path": "pages/search/index",
+      "style": {
+        "navigationBarTitleText": "搜索"
+      }
+    },
+    {
+      "path": "pages/profile/edit",
+      "style": {
+        "navigationBarTitleText": "编辑资料"
+      }
+    },
+    {
+      "path": "pages/message/detail",
+      "style": {
+        "navigationBarTitleText": "消息详情"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "悦享生活",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F5F5F5"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#FF5A5F",
+    "borderStyle": "black",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页",
+        "iconPath": "static/tabbar/home.svg",
+        "selectedIconPath": "static/tabbar/home-active.svg"
+      },
+      {
+        "pagePath": "pages/blog/index",
+        "text": "探店",
+        "iconPath": "static/tabbar/explore.svg",
+        "selectedIconPath": "static/tabbar/explore-active.svg"
+      },
+      {
+        "pagePath": "pages/ai/chat",
+        "text": "AI助手",
+        "iconPath": "static/tabbar/ai.svg",
+        "selectedIconPath": "static/tabbar/ai-active.svg"
+      },
+      {
+        "pagePath": "pages/message/index",
+        "text": "消息",
+        "iconPath": "static/tabbar/msg.svg",
+        "selectedIconPath": "static/tabbar/msg-active.svg"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "static/tabbar/my.svg",
+        "selectedIconPath": "static/tabbar/my-active.svg"
+      }
+    ]
+  }
+}

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.yuexiang</groupId>
+        <artifactId>yuexiang-dependencies</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../yuexiang-dependencies/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>yuexiang-server</artifactId>
+    <packaging>jar</packaging>
+
+    <name>yuexiang-server</name>
+    <description>Server Module - Integration of all starters</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-module-system-biz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-module-user-biz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-module-shop-biz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-module-voucher-biz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-module-blog-biz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-module-ai-biz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Web Starter -->
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- MyBatis Starter -->
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-mybatis</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Security Starter -->
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-security</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Redis Starter -->
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-redis</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Swagger Starter -->
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-swagger</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Storage Starter -->
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-storage</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Log Starter -->
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-log</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Test Starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

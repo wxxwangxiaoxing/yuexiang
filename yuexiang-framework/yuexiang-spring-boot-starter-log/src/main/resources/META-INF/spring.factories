@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.yuexiang.framework.log.config.LogAutoConfiguration

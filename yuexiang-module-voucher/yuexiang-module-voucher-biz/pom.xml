@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.yuexiang</groupId>
+        <artifactId>yuexiang-module-voucher</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>yuexiang-module-voucher-biz</artifactId>
+
+    <name>yuexiang-module-voucher-biz</name>
+    <description>Voucher Module Business Logic for Yuexiang Project</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-module-voucher-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-module-user-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-mybatis</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-redis</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-swagger</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-spring-boot-starter-security</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.yuexiang</groupId>
+            <artifactId>yuexiang-module-shop-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

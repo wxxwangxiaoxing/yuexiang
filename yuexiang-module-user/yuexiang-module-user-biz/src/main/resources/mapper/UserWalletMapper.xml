@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuexiang.user.mapper.UserWalletMapper">
+
+    <resultMap id="BaseResultMap" type="com.yuexiang.user.domain.entity.UserWallet">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="balance" property="balance"/>
+        <result column="frozen_balance" property="frozenBalance"/>
+        <result column="total_recharge" property="totalRecharge"/>
+        <result column="total_consume" property="totalConsume"/>
+        <result column="pay_password" property="payPassword"/>
+        <result column="version" property="version"/>
+        <result column="deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, balance, frozen_balance,
+        total_recharge, total_consume,
+        version, deleted, create_time, update_time
+    </sql>
+
+    <!-- 含敏感字段的列（仅密码校验场景使用） -->
+    <sql id="Full_Column_List">
+        <include refid="Base_Column_List"/>, pay_password
+    </sql>
+
+    <!-- ==================== 查询 ==================== -->
+
+    <!--
+        常规查询（不含支付密码）
+        用于余额展示、扣款、退款等场景
+    -->
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM tb_user_wallet
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </select>
+
+    <!--
+        含密码查询（仅用于密码校验/修改场景）
+    -->
+    <select id="selectWithPassword" resultMap="BaseResultMap">
+        SELECT <include refid="Full_Column_List"/>
+        FROM tb_user_wallet
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </select>
+
+    <!--
+        按主键查询（兼容 UserAccountServiceImpl 的调用）
+    -->
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Full_Column_List"/>
+        FROM tb_user_wallet
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </select>
+
+    <!-- ==================== 扣款 ==================== -->
+
+    <!--
+        扣减余额（乐观锁 + 余额校验）
+        WHERE 条件: version 防并发 + balance 防超扣
+        返回影响行数: 1=成功, 0=版本冲突或余额不足
+    -->
+    <update id="deductBalance">
+        UPDATE tb_user_wallet
+        SET balance = balance - #{amount},
+            total_consume = total_consume + #{amount},
+            version = version + 1,
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND balance >= #{amount}
+          AND version = #{version}
+          AND deleted = 0
+    </update>
+
+    <!-- ==================== 退款 ==================== -->
+
+    <!--
+        退款（加钱无需乐观锁，不存在超扣风险）
+        注意: total_consume 只增不减，退款金额记入 total_refund
+    -->
+    <update id="refundBalance">
+        UPDATE tb_user_wallet
+        SET balance = balance + #{amount},
+            version = version + 1,
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <!-- ==================== 冻结/解冻 ==================== -->
+
+    <!--
+        冻结余额（下单预扣）
+        将可用余额转入冻结余额，总额不变
+    -->
+    <update id="freezeBalance">
+        UPDATE tb_user_wallet
+        SET balance = balance - #{amount},
+            frozen_balance = frozen_balance + #{amount},
+            version = version + 1,
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND balance >= #{amount}
+          AND version = #{version}
+          AND deleted = 0
+    </update>
+
+    <!--
+        解冻余额（取消订单）
+        将冻结余额转回可用余额
+    -->
+    <update id="unfreezeBalance">
+        UPDATE tb_user_wallet
+        SET balance = balance + #{amount},
+            frozen_balance = frozen_balance - #{amount},
+            version = version + 1,
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND frozen_balance >= #{amount}
+          AND deleted = 0
+    </update>
+
+    <!--
+        扣减冻结余额（支付确认）
+        订单支付成功后，从冻结余额中扣除
+    -->
+    <update id="deductFrozenBalance">
+        UPDATE tb_user_wallet
+        SET frozen_balance = frozen_balance - #{amount},
+            total_consume = total_consume + #{amount},
+            version = version + 1,
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND frozen_balance >= #{amount}
+          AND deleted = 0
+    </update>
+
+    <!-- ==================== 充值 ==================== -->
+
+    <!--
+        充值（加钱无需乐观锁）
+    -->
+    <update id="rechargeBalance">
+        UPDATE tb_user_wallet
+        SET balance = balance + #{amount},
+            total_recharge = total_recharge + #{amount},
+            version = version + 1,
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <!-- ==================== 密码操作 ==================== -->
+
+    <!--
+        更新支付密码
+    -->
+    <update id="updatePayPassword">
+        UPDATE tb_user_wallet
+        SET pay_password = #{payPassword},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <!-- ==================== 初始化 ==================== -->
+
+    <!--
+        初始化钱包
+        version 从0开始（业界惯例）
+        ON DUPLICATE KEY 保证幂等
+    -->
+    <insert id="initWallet">
+        INSERT INTO tb_user_wallet (
+            user_id, balance, frozen_balance,
+            total_recharge, total_consume,
+            version, deleted, create_time, update_time
+        ) VALUES (
+            #{userId}, 0, 0, 0, 0,
+            0, 0, NOW(), NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            update_time = update_time
+    </insert>
+
+    <!-- ==================== 更新（通用） ==================== -->
+
+    <update id="updateById" parameterType="com.yuexiang.user.domain.entity.UserWallet">
+        UPDATE tb_user_wallet
+        <set>
+            <if test="payPassword != null">pay_password = #{payPassword},</if>
+            <if test="balance != null">balance = #{balance},</if>
+            update_time = NOW()
+        </set>
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+</mapper>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuexiang.user.mapper.UserInfoMapper">
+
+    <!-- 通用查询结果映射 -->
+    <resultMap id="BaseResultMap" type="com.yuexiang.user.domain.entity.UserInfo">
+        <id column="user_id" property="userId"/>
+        <result column="city" property="city"/>
+        <result column="introduce" property="introduce"/>
+        <result column="fans_count" property="fansCount"/>
+        <result column="follow_count" property="followCount"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="gender" property="gender"/>
+        <result column="birthday" property="birthday"/>
+        <result column="level" property="level"/>
+        <result column="points" property="points"/>
+        <result column="deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id, city, introduce, fans_count, follow_count, like_count,
+        gender, birthday, level, points, deleted, create_time, update_time
+    </sql>
+
+    <!-- ==================== 查询 ==================== -->
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM tb_user_info
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </select>
+
+    <!-- ==================== 积分操作 ==================== -->
+
+    <!--
+        增加积分
+        返回影响行数：1=成功，0=用户不存在
+    -->
+    <update id="addPoints">
+        UPDATE tb_user_info
+        SET points = points + #{points},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <!--
+        扣减积分（并发安全）
+        通过 WHERE points >= #{points} 在数据库层保证余额充足
+        返回影响行数：1=成功，0=用户不存在或余额不足
+    -->
+    <update id="deductPoints">
+        UPDATE tb_user_info
+        SET points = points - #{points},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+          AND points >= #{points}
+    </update>
+
+    <!-- ==================== 等级操作 ==================== -->
+
+    <update id="updateLevel">
+        UPDATE tb_user_info
+        SET level = #{level},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <!-- ==================== 用户信息 ==================== -->
+
+    <!--
+        插入或更新用户扩展信息
+        注意：INSERT 只设置基础字段，计数类字段给默认值
+        UPDATE 只更新个人资料字段，不覆盖计数类字段
+    -->
+    <insert id="insertOrUpdate" parameterType="com.yuexiang.user.domain.entity.UserInfo">
+        INSERT INTO tb_user_info (
+            user_id, gender, birthday, city, introduce,
+            level, points, fans_count, follow_count, like_count,
+            deleted, create_time, update_time
+        ) VALUES (
+            #{userId},
+            COALESCE(#{gender}, 0),
+            #{birthday},
+            #{city},
+            #{introduce},
+            COALESCE(#{level}, 1),
+            COALESCE(#{points}, 0),
+            0, 0, 0,
+            0, NOW(), NOW()
+        )
+        ON DUPLICATE KEY UPDATE
+            gender    = COALESCE(#{gender}, gender),
+            birthday  = COALESCE(#{birthday}, birthday),
+            city      = COALESCE(#{city}, city),
+            introduce = COALESCE(#{introduce}, introduce),
+            update_time = NOW()
+    </insert>
+
+    <!-- ==================== 社交计数操作 ==================== -->
+
+    <!--
+        更新点赞数（支持 +1 / -1）
+        GREATEST 防止减到负数（点赞计数允许兜底为0）
+    -->
+    <update id="updateLikeCount">
+        UPDATE tb_user_info
+        SET like_count = GREATEST(0, like_count + #{delta}),
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <!--
+        更新关注数（支持 +1 / -1）
+    -->
+    <update id="updateFollowCount">
+        UPDATE tb_user_info
+        SET follow_count = GREATEST(0, follow_count + #{delta}),
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <!--
+        更新粉丝数（支持 +1 / -1）
+    -->
+    <update id="updateFansCount">
+        UPDATE tb_user_info
+        SET fans_count = GREATEST(0, fans_count + #{delta}),
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <!-- ==================== 点赞数批量更新 ==================== -->
+
+    <select id="selectLikeCount" resultType="java.lang.Integer">
+        SELECT like_count 
+        FROM tb_user_info
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </select>
+
+    <update id="updateLikeCountDirectly">
+        UPDATE tb_user_info
+        SET like_count = #{likeCount},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <select id="selectUserIdsByPage" resultType="java.lang.Long">
+        SELECT user_id 
+        FROM tb_user_info
+        WHERE deleted = 0
+        ORDER BY user_id
+        LIMIT #{offset}, #{limit}
+    </select>
+
+</mapper>

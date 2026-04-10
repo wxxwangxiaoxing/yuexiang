@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yuexiang.blog.mapper.BlogMapper">
+
+    <update id="updateLikeCount">
+        UPDATE tb_blog 
+        SET like_count = GREATEST(0, like_count + #{delta})
+        WHERE id = #{id} 
+          AND deleted = 0
+    </update>
+
+    <update id="updateCommentCount">
+        UPDATE tb_blog 
+        SET comment_count = comment_count + #{delta} 
+        WHERE id = #{id} 
+          AND deleted = 0
+    </update>
+
+    <update id="updateFavoriteCount">
+        UPDATE tb_blog 
+        SET favorite_count = favorite_count + #{delta} 
+        WHERE id = #{id} 
+          AND deleted = 0
+    </update>
+
+    <select id="getFavoriteCount" resultType="java.lang.Integer">
+        SELECT favorite_count 
+        FROM tb_blog 
+        WHERE id = #{id} 
+          AND deleted = 0
+    </select>
+
+</mapper>
