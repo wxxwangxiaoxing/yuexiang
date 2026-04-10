@@ -977,19 +977,27 @@ CREATE TABLE `tb_region` (
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_ai_session`;
 CREATE TABLE `tb_ai_session` (
-  `id`            BIGINT       NOT NULL AUTO_INCREMENT                        COMMENT '主键ID',
-  `session_id`    VARCHAR(64)  NOT NULL                                       COMMENT '会话ID(UUID)',
-  `user_id`       BIGINT       NOT NULL                                       COMMENT '用户ID',
-  `title`         VARCHAR(255) DEFAULT NULL                                   COMMENT '会话标题(首条问题)',
-  `message_count` INT          NOT NULL DEFAULT 0                             COMMENT '消息数量',
-  `shop_ids`      TEXT         DEFAULT NULL                                   COMMENT '推荐的商户ID(JSON数组)',
-  `create_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP             COMMENT '创建时间',
-  `update_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
-                               ON UPDATE CURRENT_TIMESTAMP                    COMMENT '更新时间',
-  `deleted`       TINYINT      NOT NULL DEFAULT 0                             COMMENT '逻辑删除',
+  `id`               BIGINT         NOT NULL AUTO_INCREMENT                        COMMENT '主键ID',
+  `session_id`       VARCHAR(64)    NOT NULL                                       COMMENT '会话ID(UUID)',
+  `user_id`          BIGINT         NOT NULL                                       COMMENT '用户ID',
+  `title`            VARCHAR(255)   DEFAULT NULL                                   COMMENT '会话标题(首条问题)',
+  `message_count`    INT            NOT NULL DEFAULT 0                             COMMENT '消息数量',
+  `status`           TINYINT        NOT NULL DEFAULT 1                             COMMENT '会话状态：1-活跃 0-关闭',
+  `shop_ids`         TEXT           DEFAULT NULL                                   COMMENT '推荐的商户ID(JSON数组)',
+  `create_time`      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP             COMMENT '创建时间',
+  `update_time`      DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                     ON UPDATE CURRENT_TIMESTAMP                    COMMENT '更新时间',
+  `last_active_time` DATETIME       DEFAULT NULL                                   COMMENT '最近活跃时间',
+  `total_tokens`     INT            NOT NULL DEFAULT 0                             COMMENT '累计Token消耗',
+  `summary`          TEXT           DEFAULT NULL                                   COMMENT '会话摘要',
+  `context_json`     JSON           DEFAULT NULL                                   COMMENT '上下文快照(JSON)',
+  `longitude`        DECIMAL(10,6)  DEFAULT NULL                                   COMMENT '用户经度',
+  `latitude`         DECIMAL(10,6)  DEFAULT NULL                                   COMMENT '用户纬度',
+  `deleted`          TINYINT        NOT NULL DEFAULT 0                             COMMENT '逻辑删除',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_ai_session_id` (`session_id`),
-  KEY `idx_ai_session_user`    (`user_id`, `create_time`)
+  KEY `idx_ai_session_user` (`user_id`, `create_time`),
+  KEY `idx_ai_session_user_update` (`user_id`, `update_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI探店会话表';
 
 
@@ -998,12 +1006,20 @@ CREATE TABLE `tb_ai_session` (
 -- ----------------------------
 DROP TABLE IF EXISTS `tb_ai_message`;
 CREATE TABLE `tb_ai_message` (
-  `id`          BIGINT       NOT NULL AUTO_INCREMENT                          COMMENT '主键ID',
-  `session_id`  VARCHAR(64)  NOT NULL                                         COMMENT '会话ID',
-  `role`        VARCHAR(16)  NOT NULL                                         COMMENT '角色',
-  `content`     TEXT         NOT NULL                                         COMMENT '消息内容',
-  `shop_ids`    TEXT         DEFAULT NULL                                     COMMENT '本条消息关联的商户ID(JSON数组)',
-  `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP               COMMENT '创建时间',
+  `id`            BIGINT       NOT NULL AUTO_INCREMENT                          COMMENT '主键ID',
+  `session_id`    VARCHAR(64)  NOT NULL                                         COMMENT '会话ID',
+  `role`          VARCHAR(16)  NOT NULL                                         COMMENT '角色',
+  `content`       TEXT         NOT NULL                                         COMMENT '消息内容',
+  `message_type`  VARCHAR(32)  NOT NULL DEFAULT 'text'                          COMMENT '消息类型：text/tool/card',
+  `shop_ids`      TEXT         DEFAULT NULL                                     COMMENT '本条消息关联的商户ID(JSON数组)',
+  `cards_data`    JSON         DEFAULT NULL                                     COMMENT '卡片完整数据快照(JSON数组)',
+  `tool_name`     VARCHAR(64)  DEFAULT NULL                                     COMMENT '工具名称',
+  `tool_args`     JSON         DEFAULT NULL                                     COMMENT '工具参数(JSON)',
+  `tool_result`   LONGTEXT     DEFAULT NULL                                     COMMENT '工具执行结果',
+  `finish_reason` VARCHAR(32)  DEFAULT NULL                                     COMMENT '结束原因',
+  `token_usage`   INT          NOT NULL DEFAULT 0                               COMMENT '本条消息Token消耗',
+  `error_code`    VARCHAR(64)  DEFAULT NULL                                     COMMENT '错误码',
+  `create_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP               COMMENT '创建时间',
   PRIMARY KEY (`id`),
   KEY `idx_ai_message_session` (`session_id`, `create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI探店消息表';

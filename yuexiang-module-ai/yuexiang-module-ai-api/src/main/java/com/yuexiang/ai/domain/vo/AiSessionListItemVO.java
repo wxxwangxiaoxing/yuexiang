@@ -7,14 +7,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "AI会话详情VO")
-public class AiSessionDetailVO {
+@Schema(description = "AI会话列表项VO")
+public class AiSessionListItemVO {
 
     @Schema(description = "会话ID")
     private String sessionId;
@@ -28,30 +27,18 @@ public class AiSessionDetailVO {
     @Schema(description = "会话状态")
     private Integer status;
 
-    @Schema(description = "最近活跃时间")
-    private Long lastActiveTime;
-
     @Schema(description = "累计Token数")
     private Integer totalTokens;
 
-    @Schema(description = "会话摘要")
-    private String summary;
+    @Schema(description = "最近活跃时间")
+    private Long lastActiveTime;
 
-    @Schema(description = "上下文快照JSON")
-    private String contextJson;
+    @Schema(description = "创建时间")
+    private Long createTime;
 
     @Schema(description = "经度")
     private BigDecimal longitude;
 
     @Schema(description = "纬度")
     private BigDecimal latitude;
-
-    @Schema(description = "推荐商户列表")
-    private List<RecommendedShopVO> shops;
-
-    @Schema(description = "消息列表")
-    private List<AiMessageVO> messages;
-
-    @Schema(description = "创建时间")
-    private Long createTime;
 }

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -23,6 +24,8 @@ public class AiSession {
 
     private Integer messageCount;
 
+    private Integer status;
+
     private String shopIds;
 
     @TableLogic
@@ -31,4 +34,16 @@ public class AiSession {
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
+
+    private LocalDateTime lastActiveTime;
+
+    private Integer totalTokens;
+
+    private String summary;
+
+    private String contextJson;
+
+    private BigDecimal longitude;
+
+    private BigDecimal latitude;
 }

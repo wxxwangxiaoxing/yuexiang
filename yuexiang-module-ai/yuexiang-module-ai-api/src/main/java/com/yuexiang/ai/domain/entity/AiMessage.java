@@ -20,7 +20,23 @@ public class AiMessage {
 
     private String content;
 
+    private String messageType;
+
     private String shopIds;
+
+    private String cardsData;
+
+    private String toolName;
+
+    private String toolArgs;
+
+    private String toolResult;
+
+    private String finishReason;
+
+    private Integer tokenUsage;
+
+    private String errorCode;
 
     private LocalDateTime createTime;
 }
